@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <script src="https://kit.fontawesome.com/4d03537df5.js" crossorigin="anonymous"></script>
+  <style>
+    html {
+      font-family: 'Lato', 'Noto Sans TC', sans-serif;
+      /* 字體，順序 */
+
+    }
+
+    body {
+      width: 100%;
+      max-width: 960px;
+    }
+
+    .wrap {
+      border: 1px solid #ccc;
+      border-radius: 20px;
+    }
+
+    .wrap,
+    .my-list,
+    .done-list {
+      padding: 10px;
+      width: 75%;
+      margin: 10px auto;
+      list-style: none;
+    }
+
+    .my-list>li,
+    .done-list>li {
+      background-color: gray;
+      padding: 10px;
+      margin-bottom: 5px;
+      color: #ccc;
+      /* cursor: pointer; */
+    }
+
+    .my-list>li:hover,
+    .done-list>li:hover,
+    .my-list>li:hover.star-wrap,
+    .done-list>li:hover.star-wrap{
+      background-color: rgba(36, 36, 36, 0.75);
+    }
+
+    /* item */
+    .item {
+      display: flex;
+      justify-content: space-between;      
+      position: relative;
+    }
+    .star-wrap{
+      display: inline-block;
+
+    }
+
+    .choose{
+      display: none;
+    }
+    .open{
+      display: block;
+      position: absolute;
+      right: 53px;
+      left: 0px;
+      top: -60px;
+      bottom: 0;
+      margin: 0 auto;
+      width: 150px;
+      height: 50px;
+      background-color: #fff;
+      border: 2px solid rgba(36, 36, 36, 0.5);
+      border-radius: 20px;
+      line-height: 50px;
+      text-align: center;
+      color: black;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="box">
+    <br /><br />
+    <input type="text" id="list-input" placeholder="請輸入代辦事項" />
+    <input type="button" value="add" id="list-input-btn" />
+    <hr />
+    <div class="wrap">
+      <p>代辦區</p>
+      <ul id="my-list" class="my-list">        
+      </ul>
+    </div>
+    <div class="wrap">
+      <p>完成區</p>
+      <ul id="done-list" class="done-list">        
+      </li>
+      </ul>
+    </div>
+  </div>
+  <script>
+
+   
+    // 第一種思路：
+    //  - 全部包在 addbtn 事件裡
+    //  - 給每個功能按鈕都賦予新的 addEventListener
+
+
+    // variable
+
+    // 新增區與兩個盒子
+    const addinput = document.getElementById('list-input');
+    const addBtn = document.getElementById('list-input-btn');
+    const waitBox = document.getElementById('my-list');
+    const doneBox = document.getElementById('done-list');
+    
+    // 項目區
+    const item = document.querySelector('.item');
+    const content = document.getElementById('input');
+    // 項目區裡的 button 區
+    const score = document.querySelector('.score');
+    const modify = document.querySelector('.modify');
+    const del = document.querySelector('.del');
+    const back = document.querySelector('.back-to-wait');
+    
+    // 控制用變數
+    let scoreActive = false;
+    let scoreNow = document.getElementById('list-input');
+    let active= document.getElementById('list-input');
+
+
+
+    // event
+
+    // 新增項目
+    addBtn.addEventListener('click', function (e) {
+       waitBox.insertAdjacentHTML('afterbegin', `
+       <li class="item">
+          <div class="choose">請為項目評分</div>
+          <input type="text" class="content" value="${addinput.value}" disabled>
+          <div id="btn-wrap">
+            <div class="star-wrap" style="display: none;">
+              <i class="fa-regular fa-star"></i>
+              <i class="fa-regular fa-star"></i>
+              <i class="fa-regular fa-star"></i>
+              <i class="fa-regular fa-star"></i>
+              <i class="fa-regular fa-star"></i>
+            </div>            
+            <button class="score" style="display: none;">評分</button>
+            <button class="done">完成</button>
+            <button class="modify">修改</button>
+            <button class="del">刪除事項</button>
+            <button class="back-to-wait" style="display: none;">回到代辦</button>
+          </div>  
+        </li>
+          `)
+    })
+
+
+    // 在 wait box 中，觸發點擊事件
+     waitBox.addEventListener('click', (e) => { 
+      
+      // 按下修改按鈕
+      if (e.target.className === 'modify') {
+        if(active.className === 'content'){
+          active.disabled = true;
+        }
+        active = e.target.parentElement.previousElementSibling;
+        active.disabled = false; // 顯示 input
+        active.focus();          // 開始編輯狀態
+      } 
+
+      // 按下刪除按鈕
+      if (e.target.className === 'del') {
+        e.target.parentElement.parentElement.outerHTML = '';   
+      }
+
+      // 按下完成按鈕
+      if (e.target.className === 'done') {          
+        e.target.parentElement.lastElementChild.style = "display: inline-block;"; 
+        e.target.parentElement.firstElementChild.style = "display: inline-block;"; 
+        e.target.parentElement.children[1].style = "display: inline-block;"; 
+        e.target.style = 'display: none;';
+        doneBox.insertBefore(e.target.parentElement.parentElement, doneBox.children[0]);
+      }
+    })
+
+
+    // 在 done box 中，觸發點擊事件
+    doneBox.addEventListener('click', (e) => {
+      console.log(e.target, this);
+      // 按下評分按鈕
+      if (e.target.className === 'score') {
+       
+        e.target.value = "active";
+        // 當點到的是 score 且 value 是 active
+        // 若 scoreNow.value === "active" 則清除，scoreㄅNow 的 value 
+        // 用來區分 點到的星星 是不是自己的星星
+        if (scoreNow.value === "active") {
+          scoreNow.value = 'none';
+        }
+
+        // 再將當前的 e.target 賦值給 scoreNow 用來之後對比
+        scoreNow = e.target;
+
+
+        // 避免：已經開啟其他評分區的狀況，先關掉其他評分提示與 star 顏色
+        if(scoreActive === true) {
+          // 先把 評分狀態 關掉
+          scoreActive = false;
+          
+          // 將所有的評分區與 star 區各自收集成 array
+          let choose = document.querySelectorAll('.choose');
+          let stars = document.querySelectorAll('.fa-star');
+          // 將所有的評分提示關閉
+          choose.forEach((e) => {
+            e.classList.remove('open');
+          })
+          // 將所有的 star 都去掉顏色
+          stars.forEach((el, index) => {
+            el.style ="color: auto;";
+          })
+        }
+
+        // 評分狀態 開啟
+        scoreActive = true;    
+        // 顯示 提示選擇區
+        e.target.parentElement.parentElement.firstElementChild.classList.add('open');
+        
+        // 抓出當前的 btn 區裡，星星容器裡的所有星星         
+        let starsList = e.target.parentElement.firstElementChild.children;
+        
+        Object.values(starsList).forEach((el, index) => {
+          // 將星星轉為白線星星，作為啟動狀態
+          el.className = 'fa-regular fa-star'
+          el.style ="color: #fff;";          
+        })     
+        
+      }
+
+      // 按下修改按鈕
+      if (e.target.className === 'modify') {
+        if(active.className === 'content'){
+          active.disabled = true;
+        }
+        active = e.target.parentElement.previousElementSibling;
+        active.disabled = false; // 顯示 input
+        active.focus();          // 開始編輯狀態
+      } 
+      
+      // 按下刪除按鈕
+      if (e.target.className === 'del') {
+        e.target.parentElement.parentElement.outerHTML = '';   
+      }
+
+      // 按下回到代辦按鈕
+      if (e.target.className === 'back-to-wait') {          
+        e.target.parentElement.firstElementChild.style = "display: none;"; 
+        e.target.parentElement.children[1].style = "display: none;"; 
+        e.target.style = 'display: none;';
+        e.target.parentElement.children[2].style = "display: inline-block;"; 
+        waitBox.insertBefore(e.target.parentElement.parentElement,  waitBox.children[0]);
+      }
+    })
+
+
+    // 讓 星星只建立一次監聽
+    doneBox.addEventListener('mouseover', (e) => {
+      
+      // 碰到星星會亮
+      // 且 scoreActive true (完成鈕開啟狀態)
+      // 被碰到的星星區，不是當前按鈕區中的星星區
+      //  - 使用 完成按鈕來做對比，在按鈕上多加上一個 value
+      if(e.target.className === 'fa-regular fa-star' &&
+      scoreActive === true &&
+      e.target.parentElement.parentElement.children[1] === scoreNow){
+        e.target.className = 'fa-solid fa-star';
+      }
+      
+    })
+
+
+    // 對 input box 雙擊左鍵時，開啟編輯任務
+    document.addEventListener('dblclick', (e) => {
+      if (e.target.className === 'content' && e.target.disabled === true){
+        active = e.target;       // 先讓 active 轉為當前目標 
+        active.disabled = false; // 再讓 input enable
+        active.focus();          // 最後 focus
+      }
+    })
+
+
+    // 當在編輯狀態時，點擊畫面中一般位置(非按鈕區)，
+    // 1. 關掉評分相關顯示
+    // 2. input 結束編輯狀態
+    document.addEventListener('click', (e) => {
+
+      // 1. 關掉評分相關顯示 
+      // 避免點到 評分按鈕時觸發
+      if(e.target.className === 'score') {
+        // return; 若加上 return 會導致下方 2. input 結束編輯狀態 不執行
+      }else {        
+        // 先把 scoreActive 關掉
+        scoreActive = false;
+        let choose = document.querySelectorAll('.choose');
+        let stars = document.querySelectorAll('.fa-star');
+        // 將所有的評分提示關閉
+        choose.forEach((e) => {
+          e.classList.remove('open');
+        })
+        // 將所有的 star 都去掉顏色
+        stars.forEach((el, index) => {
+          el.style ="color: auto;";
+        })
+      }
+      
+      // 2. input 結束編輯狀態
+      // 避免點到按鈕時觸發
+      if(e.target.className === 'del' || 
+      e.target.className === 'back-to-wait' ||      
+      e.target.className === 'modify' ||
+      document.activeElement.className === 'content') return;
+      // 將所有的 input box 都隱藏
+      // 避免若 active 是 addinput 也被隱藏的狀況
+      if(active.className === 'content' ){
+        active.disabled = true;
+      }
+    })
+
+    // 當在編輯狀態時，按下 enter，結束編輯狀態
+    active.addEventListener('keyup', (e) => {
+      if (e.keyCode === 13 && active.className === 'content'){
+        console.log(active);        
+        active.disabled = true;
+      }
+    })
+
+    </script> 
+</body>
+
+</html>
